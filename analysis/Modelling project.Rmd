@@ -1,0 +1,67 @@
+---
+title: "Modelling project"
+author: "Himal Shrestha"
+date: "28/06/2021"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "C:/Users/19226876/OneDrive - LA TROBE UNIVERSITY/PhD Year II/Workshops/210623_data driven modelling")
+```
+
+```{r}
+library(tidyverse)
+```
+
+### Load data
+
+```{r}
+births <- read.csv("data/births.csv")
+cases <- read.csv("data/chicken_pox_cases.csv")
+population <- read.csv("data/population.csv")
+```
+
+```{r}
+qplot(year, births, data = births)
+
+ggplot(cases) +
+  geom_line(aes(year, cases)) + xlim(1950, 1960)
+
+qplot(year, population, data = population)
+```
+
+Parameters to be estimated:
+
+-   $\alpha$ - birth rate
+
+-   $\mu$ - mortality rate
+
+-   $b$ -
+
+-   $\gamma$ - recovery rate
+
+-   $\beta_0$ - average infection rate throughout the year
+
+-   $\epsilon$ - strength of seasonal forcing function
+
+-   $S_0$ - number of susceptible individuals at the start of 1950
+
+## Fitting the ODE model
+
+### $\alpha$ parameter
+
+```{r}
+births_50s <- births %>% filter(year >= 1950 & year < 1960)
+birth <- sum(births_50s$births)/(max(births_50s$year) - min(births_50s$year))
+```
+
+### $\mu$ parameter
+
+```{r}
+population_50s <- population %>% filter(year >= 1950 & year < 1960)
+pop_diff <- (max(population_50s$population) - min(population$population))/(max(population_50s$year) - min(population_50s$year))
+death_rate <- pop_diff - birth
+```
