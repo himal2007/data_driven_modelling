@@ -1,31 +1,4 @@
-``` r
-library(tidyverse)
-```
-
-    ## -- Attaching packages --------------------------------------- tidyverse 1.3.1 --
-
-    ## v ggplot2 3.3.4     v purrr   0.3.4
-    ## v tibble  3.1.2     v dplyr   1.0.7
-    ## v tidyr   1.1.3     v stringr 1.4.0
-    ## v readr   1.4.0     v forcats 0.5.1
-
-    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-
 ### Load data
-
-``` r
-births <- read.csv("data/births.csv")
-cases <- read.csv("data/chicken_pox_cases.csv")
-```
-
-    ## Warning in scan(file = file, what = what, sep = sep, quote = quote, dec = dec, :
-    ## embedded nul(s) found in input
-
-``` r
-population <- read.csv("data/population.csv")
-```
 
 ``` r
 qplot(year, births, data = births)
@@ -104,7 +77,7 @@ y <- cases_50s$cases
 # plot(y~t,ylim=c(min(y)-0.1*rg,max(y)+0.1*rg))
 # lines(fitted(reslm)~t,col=4,lty=2)
 
-res <- nls(y ~ e*sin((2*pi/365)*t + b), start = list(e = 600, b = 1))
+res <- nls(y ~ e*sin((2*pi/365)*t + b), start = list(e = 600, b = .5))
 co <- coef(res)
 
 fit <- function(e, x, b) {e*sin((2*pi/1)*x + b)}

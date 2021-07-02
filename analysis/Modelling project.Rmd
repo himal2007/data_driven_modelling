@@ -2,7 +2,9 @@
 title: "Modelling project"
 author: "Himal Shrestha"
 date: "28/06/2021"
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
 editor_options: 
   markdown: 
     wrap: 72
@@ -12,13 +14,13 @@ editor_options:
 knitr::opts_knit$set(root.dir = "C:/Users/19226876/OneDrive - LA TROBE UNIVERSITY/PhD Year II/Workshops/210623_data driven modelling")
 ```
 
-```{r}
+```{r, echo=FALSE, include=FALSE}
 library(tidyverse)
 ```
 
 ### Load data
 
-```{r}
+```{r, warning=FALSE, echo=FALSE}
 births <- read.csv("data/births.csv")
 cases <- read.csv("data/chicken_pox_cases.csv")
 population <- read.csv("data/population.csv")
@@ -65,3 +67,35 @@ population_50s <- population %>% filter(year >= 1950 & year < 1960)
 pop_diff <- (max(population_50s$population) - min(population$population))/(max(population_50s$year) - min(population_50s$year))
 death_rate <- pop_diff - birth
 ```
+
+### $b$ parameter
+
+```{r}
+cases_50s <- cases %>% filter(year >= 1950 & year < 1960)
+plot(cases_50s$year, cases_50s$cases)
+```
+
+```{r}
+t <- cases_50s$year
+y <- cases_50s$cases
+
+# ssp <- spectrum(y)
+# per <- 1/ssp$freq[ssp$spec==max(ssp$spec)]
+# reslm <- lm(y ~ sin(2*pi/365*t) +cos(2*pi/365*t))
+# summary(reslm)
+# 
+# rg <- diff(range(y))
+# plot(y~t,ylim=c(min(y)-0.1*rg,max(y)+0.1*rg))
+# lines(fitted(reslm)~t,col=4,lty=2)
+
+res <- nls(y ~ e*sin((2*pi/365)*t + b), start = list(e = 600, b = .5))
+co <- coef(res)
+
+fit <- function(e, x, b) {e*sin((2*pi/1)*x + b)}
+
+pred_cases <- fit(e = co["e"], x = t, b = co["b"])
+plot(t, y)
+curve(fit(x, e = co["e"], b = co["b"]), col = "blue", add = T)
+```
+
+ca
