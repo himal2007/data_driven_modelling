@@ -16,6 +16,15 @@ knitr::opts_knit$set(root.dir = "C:/Users/19226876/OneDrive - LA TROBE UNIVERSIT
 
 ```{r, echo=FALSE, include=FALSE}
 library(tidyverse)
+library(session)
+```
+
+```{r}
+restore.session(file = "data_modelling.RSession")
+```
+
+```{r}
+save.session(file = "data_modelling.RSession")
 ```
 
 ### Load data
@@ -97,5 +106,66 @@ pred_cases <- fit(e = co["e"], x = t, b = co["b"])
 plot(t, y)
 curve(fit(x, e = co["e"], b = co["b"]), col = "blue", add = T)
 ```
+## SIR
+Running simple SIR model in R
+```{r}
+library(deSolve)
+```
 
-ca
+1. Define R function for the general system of equations
+```{r}
+SEI_seasonal = function(time, state, parameters){
+  with(as.list(c(state, parameters)),{
+    beta <- beta_0 * (1 + epsilon * sin((2 * pi * time/1) +  b))
+    
+    # defining the equations
+    dS <- alpha * (S + I + R) - mu * S - beta * S * I
+    dI <- beta * S * I - (gamma + mu) * I
+    dR <- gamma * I - mu * R
+    res = c(dS, dI, dR, beta)
+    # return the list of gradients
+    list(res)
+  })
+}
+
+```
+
+2. Specify the time points at which we want the integrator to save the state of the system
+3. Provide values for the parameters
+4. Give initial values for the all state variables
+```{r}
+times  = seq(1950, 2010, by = 1/100)
+
+SEI_seasonal_pars <- c(
+  alpha = 139200.9,
+  mu = 255449.1,
+  beta_0 = 900000,
+  epsilon = 979.6160047,
+  b = 0.5636866,
+  gamma = (1/2)
+)
+
+S_0 <- 4597542 - 385 - 255449.1 + 139200.9
+
+init <- c(S = S_0, I = 385, R = 1000, beta = )
+```
+
+5. Invoke R function to do the integration
+```{r}
+out <- ode(y = init, times = times, func = SEI_seasonal, parms = SEI_seasonal_pars)
+out=as.data.frame(out) 
+head(round(out, 3))
+```
+```{r}
+# Plot the output ---------------------------------------------------------
+tidy_out <- out %>% pivot_longer(!time, names_to = "variable", values_to = "values") %>% filter(variable == "I")
+
+ggplot(tidy_out) +
+  geom_line(mapping = aes(x = time, y = values, color = variable))
+```
+
+```{r}
+plot(x= out$time , y=out$S, ylab="Fraction", xlab= "Time", type="l")
+lines(x=out$time, y=out$I, col="red") 
+lines(x=out$time, y=out$R, col="green")
+```
